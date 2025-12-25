@@ -63,6 +63,7 @@ p.subtitle {
 }
 
 .upload-card {
+    display: block;
     background: rgba(255, 255, 255, 0.5);
     border: 2px dashed #cbd5e0;
     border-radius: 12px;
@@ -224,8 +225,15 @@ tr:hover td {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .spinner {
@@ -239,6 +247,11 @@ tr:hover td {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

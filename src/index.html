@@ -23,7 +23,7 @@
         </header>
 
         <div class="upload-section">
-            <div class="upload-card" onclick="document.getElementById('fileA').click()">
+            <label class="upload-card" for="fileA">
                 <h3>Daily Report (File A)</h3>
                 <p>Upload the .xls file containing daily report data.</p>
                 <div class="file-input-wrapper">
@@ -31,7 +31,7 @@
                     <input type="file" id="fileA" accept=".xls,.xlsx" onchange="updateFileName('fileA', 'statusA')">
                 </div>
                 <div id="statusA" class="file-status"></div>
-            </div>
+            </label>
         </div>
 
         <div class="action-area">
