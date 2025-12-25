@@ -67,7 +67,7 @@ p.subtitle {
 
 .upload-card {
     display: block;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.5);
     border: 2px dashed #cbd5e0;
     border-radius: 12px;
     padding: 30px;
@@ -79,8 +79,8 @@ p.subtitle {
 
 .upload-card:hover {
     border-color: var(--accent-color);
-    background: rgba(255, 255, 255, 0.8);
-    transform: translateY(-2px);
+    background: rgba(0, 0, 0, 0.8);
+    /*transform: translateY(-2px);*/
 }
 
 .upload-card h3 {
@@ -111,9 +111,9 @@ p.subtitle {
 }
 
 .btn-upload {
-    background: white;
-    border: 1px solid #e2e8f0;
-    color: var(--text-main);
+    background: rgb(0, 0, 0);
+    border: 2px solid #e2e8f0;
+    color: var(--accent-color);
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 0.9rem;
