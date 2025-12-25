@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Reconciliation App</title>
+    <!-- Import SheetJS Library for Excel processing -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .upload-section { display: flex; gap: 20px; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; }
+        .file-input { flex: 1; padding: 15px; border: 2px dashed #ccc; border-radius: 5px; text-align: center; }
+        .file-input h3 { margin-top: 0; color: #555; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background-color: #218838; }
+        
+        /* Table Styling */
+        .result-section { margin-top: 30px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* Status Colors */
+        .match { color: green; font-weight: bold; }
+        .mismatch { color: red; font-weight: bold; }
+        .missing { color: orange; font-weight: bold; }
+        
+        .note { font-size: 0.9em; color: #666; margin-bottom: 20px; background: #fff3cd; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Attendance Matcher</h1>
+    
+    <div class="note">
+        <strong>Important:</strong> Please ensure your Excel files have the following column headers (case-insensitive):<br>
+        <strong>File A:</strong> ID, Date, Punch In, Punch Out<br>
+        <strong>File B:</strong> Name, ID, Punch In, Punch Out, Date (or timestamp containing date)
+    </div>
+
+    <div class="upload-section">
+        <div class="file-input">
+            <h3>1. Upload File A</h3>
+            <p>(Monthly Individual Record)</p>
+            <input type="file" id="fileA" accept=".xlsx, .xls">
+        </div>
+        <div class="file-input">
+            <h3>2. Upload File B</h3>
+            <p>(Daily All-Staff Sheet)</p>
+            <input type="file" id="fileB" accept=".xlsx, .xls">
+        </div>
+    </div>
+
+    <button onclick="processFiles()">Compare Files</button>
+
+    <div id="output" class="result-section"></div>
+</div>
+
+<script>
+    async function processFiles() {
+        const fileAInput = document.getElementById('fileA');
+        const fileBInput = document.getElementById('fileB');
+        const outputDiv = document.getElementById('output');
+
+        if (!fileAInput.files[0] || !fileBInput.files[0]) {
+            alert("Please upload both Excel files.");
+            return;
+        }
+
+        outputDiv.innerHTML = '<p>Processing...</p>';
+
+        try {
+            // 1. Read files concurrently
+            const [dataA, dataB] = await Promise.all([
+                readExcel(fileAInput.files[0]),
+                readExcel(fileBInput.files[0])
+            ]);
+
+            // 2. Validate Data A exists
+            if (dataA.length === 0) throw new Error("File A is empty.");
+
+            // 3. Get Target ID from the first row of File A
+            // We normalize keys to lowercase to avoid case-sensitivity issues
+            const targetID = String(dataA[0]['id'] || dataA[0]['ID']); 
+            
+            if (!targetID) throw new Error("Could not find 'ID' column in File A.");
+
+            console.log("Target Person ID:", targetID);
+
+            // 4. Create a Lookup Map for File B
+            // Key = Date (YYYY-MM-DD), Value = Record
+            const mapB = {};
+
+            dataB.forEach(row => {
+                // Normalize keys
+                const rID = String(row['id'] || row['ID']);
+                
+                // Only look at rows matching the ID from File A
+                if (rID === targetID) {
+                    // Try to find a date column. If standard Excel date, SheetJS returns a Date object.
+                    let dateObj = row['date'] || row['Date'] || row['Punch In'] || row['punch in']; 
+                    
+                    if (dateObj instanceof Date) {
+                        const dateKey = dateObj.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                        mapB[dateKey] = row;
+                    }
+                }
+            });
+
+            // 5. Generate Comparison Table
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>File A In</th>
+                            <th>File B In</th>
+                            <th>File A Out</th>
+                            <th>File B Out</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            dataA.forEach(rowA => {
+                // Get Date from File A
+                let dateA = rowA['date'] || rowA['Date'];
+                let dateKey = "";
+                let displayDate = "";
+
+                if (dateA instanceof Date) {
+                    dateKey = dateA.toISOString().split('T')[0];
+                    displayDate = dateA.toLocaleDateString();
+                } else {
+                    displayDate = "Invalid Date";
+                }
+
+                // Find matching record in File B map
+                const rowB = mapB[dateKey];
+
+                // Format Times
+                const timeA_In = formatTime(rowA['Punch In'] || rowA['punch in']);
+                const timeA_Out = formatTime(rowA['Punch Out'] || rowA['punch out']);
+                
+                let timeB_In = "-";
+                let timeB_Out = "-";
+                let status = "";
+                let statusClass = "";
+
+                if (rowB) {
+                    timeB_In = formatTime(rowB['Punch In'] || rowB['punch in']);
+                    timeB_Out = formatTime(rowB['Punch Out'] || rowB['punch out']);
+
+                    // Logic: Compare times (String comparison for simplicity)
+                    if (timeA_In === timeB_In && timeA_Out === timeB_Out) {
+                        status = "Perfect Match";
+                        statusClass = "match";
+                    } else {
+                        status = "Time Mismatch";
+                        statusClass = "mismatch";
+                    }
+                } else {
+                    status = "Not found in File B";
+                    statusClass = "missing";
+                }
+
+                html += `
+                    <tr>
+                        <td>${displayDate}</td>
+                        <td>${timeA_In}</td>
+                        <td>${timeB_In}</td>
+                        <td>${timeA_Out}</td>
+                        <td>${timeB_Out}</td>
+                        <td class="${statusClass}">${status}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            outputDiv.innerHTML = `<h3>Results for ID: ${targetID}</h3>` + html;
+
+        } catch (error) {
+            console.error(error);
+            outputDiv.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+        }
+    }
+
+    // Helper: Read Excel File and return JSON
+    function readExcel(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true }); // cellDates: true parses dates automatically
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                // Convert to JSON
+                const json = XLSX.utils.sheet_to_json(sheet);
+                resolve(json);
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // Helper: Format Date object to Time String (HH:MM AM/PM)
+    function formatTime(val) {
+        if (!val) return "N/A";
+        if (val instanceof Date) {
+            return val.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        return val; // If it's already a string
+    }
+</script>
+
+</body>
+</html>
