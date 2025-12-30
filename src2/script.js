@@ -40,7 +40,7 @@ async function extractFileA() {
             Employees found: ${fileAData.records.length}
         `;
         infoPanel.style.display = 'block';
-        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File A Parsed Successfully. Now Upload File B.</p>';
+        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File A Uploded Successfully. Now Upload File B.</p>';
 
     } catch (err) {
         console.error(err);
@@ -73,7 +73,7 @@ async function extractFileB() {
             Total Records Scanned: ${fileBData.length} (across all sheets)
         `;
         
-        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File B Parsed Successfully. Click "Compare Files" to generate report.</p>';
+        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File B Uploaded Successfully. Click "Compare Files" to generate report.</p>';
 
     } catch (err) {
         console.error(err);
