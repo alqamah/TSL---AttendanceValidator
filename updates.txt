@@ -1,0 +1,3 @@
+> add comparator (ID - header name + col.no.) manually
+> add filter options
+> 
