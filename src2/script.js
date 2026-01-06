@@ -270,6 +270,63 @@ function renderTable() {
     outputDiv.innerHTML = html;
 }
 
+// --- DOWNLOAD REPORT ---
+function downloadReport() {
+    if (comparisonResults.length === 0) {
+        alert("No data to download. Please compare files first.");
+        return;
+    }
+
+    // 1. Format Data for Export
+    // We export the full result set (comparisonResults) regardless of current filter,
+    // but we can respect the current sort if desired. 
+    // Let's rely on comparisonResults order (which might be sorted if render was called).
+    // If the user wants to export EXACTLY what they see (filtered), we would need to filter again.
+    // Usually "Download Report" implies the full comprehensive report. 
+    // However, let's export the *currently displayed* data if a filter is active? 
+    // No, standard is usually full data unless specified. Let's do FULL data.
+
+    // Check if sorted
+    const sortByName = document.getElementById('sortByName') ? document.getElementById('sortByName').checked : false;
+    let dataToExport = [...comparisonResults];
+
+    if (sortByName) {
+        dataToExport.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    const exportData = dataToExport.map(r => ({
+        "Date": r.date,
+        "Safety Pass No": r.id,
+        "Name": r.name,
+        "File A In": r.inA,
+        "File B In": r.inB,
+        "File A Out": r.outA,
+        "File B Out": r.outB,
+        "Status": r.status
+    }));
+
+    // 2. Create Sheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // 3. Column Widths
+    const wscols = [
+        { wch: 12 }, // Date
+        { wch: 15 }, // ID
+        { wch: 25 }, // Name
+        { wch: 10 }, // In A
+        { wch: 10 }, // In B
+        { wch: 10 }, // Out A
+        { wch: 10 }, // Out B
+        { wch: 15 }  // Status
+    ];
+    ws['!cols'] = wscols;
+
+    // 4. Create Workbook & Export
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Comparison Report");
+    XLSX.writeFile(wb, "Attendance_Discrepancy_Report.xlsx");
+}
+
 // --- PARSER: FILE A ---
 function readFileA(file) {
     return new Promise((resolve, reject) => {
