@@ -162,7 +162,7 @@ function compareFiles() {
 
                 if (inMatch && outMatch) {
                     status = "MATCH";
-                    colorClass = "status-match"; // We will map this to style in render
+                    colorClass = "status-match";
                 } else {
                     status = "MISMATCH";
                     colorClass = "status-mismatch";
@@ -223,11 +223,11 @@ function renderTable() {
     // Generate HTML
     let html = `
     <div class="results-table-wrapper">
-        <div style="padding:15px; background:#333; color: white; margin-bottom:10px; border-radius:5px;">
-            <strong>Total Summary:</strong> &nbsp; 
-            <span style="color:#4caf50">Matches: ${matchCount}</span> &nbsp;|&nbsp; 
-            <span style="color:#ff9800">Mismatches: ${mismatchCount}</span> &nbsp;|&nbsp; 
-            <span style="color:#f44336">Missing in B: ${missingCount}</span>
+        <div style="padding:15px; background:#333; color: white; margin-bottom:10px; border-radius:5px; display: flex; gap: 15px; align-items: center;">
+            <strong>Total Summary:</strong> 
+            <span>Matches: <span class="badge match">${matchCount}</span></span>
+            <span>Mismatches: <span class="badge mismatch">${mismatchCount}</span></span>
+            <span>Missing in B: <span class="badge missing">${missingCount}</span></span>
         </div>
 
         <table>
@@ -247,10 +247,10 @@ function renderTable() {
     `;
 
     displayData.forEach(row => {
-        let style = "";
-        if (row.statusKey === 'MATCH') style = "color: green; font-weight:bold;";
-        else if (row.statusKey === 'MISMATCH') style = "color: orange; font-weight:bold;";
-        else style = "color: red; font-weight:bold;";
+        let badgeClass = "";
+        if (row.statusKey === 'MATCH') badgeClass = "badge match";
+        else if (row.statusKey === 'MISMATCH') badgeClass = "badge mismatch";
+        else badgeClass = "badge missing";
 
         html += `
             <tr>
@@ -261,7 +261,7 @@ function renderTable() {
                 <td>${row.inB}</td>
                 <td>${row.outA}</td>
                 <td>${row.outB}</td>
-                <td style="${style}">${row.status}</td>
+                <td><span class="${badgeClass}">${row.status}</span></td>
             </tr>
         `;
     });
@@ -276,15 +276,6 @@ function downloadReport() {
         alert("No data to download. Please compare files first.");
         return;
     }
-
-    // 1. Format Data for Export
-    // We export the full result set (comparisonResults) regardless of current filter,
-    // but we can respect the current sort if desired. 
-    // Let's rely on comparisonResults order (which might be sorted if render was called).
-    // If the user wants to export EXACTLY what they see (filtered), we would need to filter again.
-    // Usually "Download Report" implies the full comprehensive report. 
-    // However, let's export the *currently displayed* data if a filter is active? 
-    // No, standard is usually full data unless specified. Let's do FULL data.
 
     // Check if sorted
     const sortByName = document.getElementById('sortByName') ? document.getElementById('sortByName').checked : false;

@@ -6,13 +6,16 @@
     --accent-color: #ffffff;
     --text-main: #ffffff;
     --text-light: #a0aec0;
-    --success: #48bb78;
-    --warning: #ed8936;
-    --danger: #f56565;
+    --success: #22543d;
+    --warning: #b05800;
+    --danger: #fb544e;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: "Atkinson Hyperlegible Mono", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 400;
     background-color: #0d0d12;
     background-image:
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
@@ -176,25 +179,28 @@ p.subtitle {
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 th {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-light);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    padding: 16px 24px;
+    font-size: 0.8rem;
+    letter-spacing: 0.025em;
+    padding: 16px 10px;
     text-align: left;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
 }
 
 td {
-    padding: 16px 24px;
+    padding: 16px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     color: var(--text-main);
+    white-space: nowrap;
+    font-weight: 300;
 }
 
 tr:last-child td {
@@ -211,7 +217,7 @@ tr:hover td {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.02em;
 }
 
 .badge.match {
@@ -226,7 +232,7 @@ tr:hover td {
 
 .badge.missing {
     background: #fed7d7;
-    color: #742a2a;
+    color: #732929;
 }
 
 @keyframes fadeIn {
@@ -262,13 +268,19 @@ tr:hover td {
 }
 
 .controls-area {
-    margin-top: 20px;
+    margin: 20px 0 20px 20px;
     display: flex;
     gap: 20px;
-    align-items: center;
-    justify-content: center;
+    align-items: left;
+    justify-content: left;
     color: white;
     flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .controls-area select {
