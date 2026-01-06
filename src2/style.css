@@ -170,7 +170,7 @@ p.subtitle {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-	color: black
+    color: black
 }
 
 table {
@@ -259,4 +259,45 @@ tr:hover td {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.controls-area {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-wrap: wrap;
+}
+
+.controls-area select {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--glass-border);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.controls-area select option {
+    background: #1e1b32;
+    color: white;
+}
+
+.controls-area label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.controls-area input[type="checkbox"] {
+    accent-color: var(--accent-color);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
