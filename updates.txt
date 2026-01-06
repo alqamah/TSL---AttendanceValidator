@@ -1,3 +1,2 @@
-> add comparator (ID - header name + col.no.) manually
-> add filter options
-> add sorting options
+add company logo
+update header font
