@@ -49,6 +49,31 @@ header {
     margin-bottom: 40px;
 }
 
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+.left-logo {
+    margin-right: auto;
+    width: 150px;
+}
+
+.right-logo {
+    margin-left: auto;
+    margin-right: -50px;
+    width: 150px;
+}
+
 h1 {
     font-weight: 700;
     font-size: 2.5rem;
