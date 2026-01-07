@@ -28,7 +28,7 @@
                 <h3>CLM Daily Report (File A)</h3>
                 <p>Upload one or more .xls files (Daily Reports).</p>
                 <div class="file-input-wrapper">
-                    <span class="btn-upload">Choose Files</span>
+                    <span class="learn-more">Choose Files</span>
                     <input type="file" id="fileA" accept=".xls,.xlsx" multiple
                         onchange="updateFileName('fileA', 'statusA')">
                 </div>
@@ -39,7 +39,7 @@
                 <h3>Vendor Monthly Report (File B)</h3>
                 <p>Upload the .xlsx file containing monthly data from Vendor.</p>
                 <div class="file-input-wrapper">
-                    <span class="btn-upload">Choose File</span>
+                    <span class="learn-more">Choose File</span>
                     <input type="file" id="fileB" accept=".xlsx,.xls" onchange="updateFileName('fileB', 'statusB')">
                 </div>
                 <div id="statusB" class="file-status"></div>
@@ -47,10 +47,10 @@
         </div>
 
         <div class="action-area">
-            <button class="btn-primary" onclick="extractFileA()">Extract data from file A</button>
-            <button class="btn-primary" onclick="extractFileB()">Extract data from file B</button>
-            <button class="btn-primary" onclick="compareFiles()">Compare files</button>
-            <button class="btn-primary" onclick="downloadReport()">Download Report</button>
+            <button class="learn-more" onclick="extractFileA()">Extract from file A</button>
+            <button class="learn-more" onclick="extractFileB()">Extract from file B</button>
+            <button class="learn-more" onclick="compareFiles()">Compare files</button>
+            <button class="learn-more" onclick="downloadReport()">Download Report</button>
         </div>
 
         <div id="infoPanel" class="info-panel"></div>
