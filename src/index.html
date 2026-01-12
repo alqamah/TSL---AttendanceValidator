@@ -7,12 +7,10 @@
     <title>Attendance Reconciliation Tool</title>
     <!-- SheetJS Library -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <!-- Google Fonts: Atkinson Hyperlegible Mono -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -20,21 +18,16 @@
 
     <div class="glass-container">
         <header>
-            <div class="header-content">
-                <img src="../assets/tata-steel-logo.svg" alt="Tata Steel Logo" class="logo left-logo">
-                <h2>Attendance Reconciliation</h2>
-                <img src="../assets/tata-logo.svg" alt="Tata Logo" class="logo right-logo">
-            </div>
+            <h2>Attendance Reconciliation</h2>
         </header>
 
         <div class="upload-section">
             <label class="upload-card" for="fileA">
                 <h3>CLM Daily Report (File A)</h3>
-                <p>Upload one or more .xls files (Daily Reports).</p>
+                <p>Upload the .xls file containing daily report data from CLM.</p>
                 <div class="file-input-wrapper">
-                    <span class="learn-more">Choose Files</span>
-                    <input type="file" id="fileA" accept=".xls,.xlsx" multiple
-                        onchange="updateFileName('fileA', 'statusA')">
+                    <span class="btn-upload">Choose File</span>
+                    <input type="file" id="fileA" accept=".xls,.xlsx" onchange="updateFileName('fileA', 'statusA')">
                 </div>
                 <div id="statusA" class="file-status"></div>
             </label>
@@ -43,7 +36,7 @@
                 <h3>Vendor Monthly Report (File B)</h3>
                 <p>Upload the .xlsx file containing monthly data from Vendor.</p>
                 <div class="file-input-wrapper">
-                    <span class="learn-more">Choose File</span>
+                    <span class="btn-upload">Choose File</span>
                     <input type="file" id="fileB" accept=".xlsx,.xls" onchange="updateFileName('fileB', 'statusB')">
                 </div>
                 <div id="statusB" class="file-status"></div>
@@ -51,34 +44,12 @@
         </div>
 
         <div class="action-area">
-            <button class="learn-more" onclick="extractFileA()">Extract from file A</button>
-            <button class="learn-more" onclick="extractFileB()">Extract from file B</button>
-            <button class="learn-more" onclick="compareFiles()">Compare files</button>
-            <button class="learn-more" onclick="downloadReport()">Download Report</button>
+            <button class="btn-primary" onclick="extractFileA()">Extract data from file A</button>
+            <button class="btn-primary" onclick="extractFileB()">Extract data from file B</button>
+            <button class="btn-primary" onclick="compareFiles()">Compare files</button>
         </div>
 
         <div id="infoPanel" class="info-panel"></div>
-
-        <div id="resultsSummary"></div>
-
-        <div class="controls-area" style="display: none;">
-            <div class="control-group">
-                <label for="filterStatus">Filter by Status:</label>
-                <select id="filterStatus" onchange="renderTable()">
-                    <option value="ALL">Show All</option>
-                    <option value="MATCH">Matches</option>
-                    <option value="MISMATCH">Mismatches</option>
-                    <option value="NOT_FOUND">Not Found in B</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label style="cursor: pointer;">
-                    <input type="checkbox" id="sortByName" onchange="renderTable()">
-                    Sort Names Alphabetically
-                </label>
-            </div>
-        </div>
-
         <div id="output"></div>
     </div>
 
