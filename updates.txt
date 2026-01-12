@@ -1,2 +1,3 @@
-add company logo
-update header font
+check for record duplication
+add crane names
+mention the crane name, color the cell, cell header names
