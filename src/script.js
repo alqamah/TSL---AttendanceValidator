@@ -358,10 +358,10 @@ function renderTable(data) {
 
     html += `</tbody></table>
         <div style="padding:15px; background:#eee; margin-top:10px; border-radius:5px; color: #333;">
-            <strong>Overall Summary:</strong> &nbsp; 
-            <span style="color:green">Matches: ${match}</span> &nbsp;|&nbsp; 
-            <span style="color:orange">Mismatches: ${mismatch}</span> &nbsp;|&nbsp; 
-            <span style="color:purple">Duplicates in B: ${duplicate}</span>
+            <strong style="color:#36454F">Overall Summary:</strong> &nbsp; 
+            <span style="color:#4F7942">Matches: ${match}</span> &nbsp;|&nbsp; 
+            <span style="color:#C04000">Mismatches: ${mismatch}</span> &nbsp;|&nbsp; 
+            <span style="color:#5D3FD3">Duplicates in B: ${duplicate}</span>
         </div>
     </div>`;
 
