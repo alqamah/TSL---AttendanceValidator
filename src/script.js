@@ -4,47 +4,89 @@
 let extractedA = null;
 let extractedB = null;
 
+// New Globals for Search/Filter
+let comparisonResults = []; // Stores the final compared validation list
+let currentFilter = 'all';  // 'all' | 'MATCH' | 'MISMATCH' | 'NOT FOUND IN B' | 'DUPLICATE'
+let searchTerm = '';
+
 // UI Helper: Update filename label on upload
 function updateFileName(inputId, statusId) {
     const input = document.getElementById(inputId);
     const status = document.getElementById(statusId);
-    if (input.files && input.files[0]) {
-        status.textContent = input.files[0].name;
+    if (input.files && input.files.length > 0) {
+        if (input.files.length === 1) {
+            status.textContent = input.files[0].name;
+        } else {
+            status.textContent = `${input.files.length} files selected`;
+        }
     } else {
         status.textContent = "";
     }
 }
 
-// --- STEP 1: EXTRACT FILE A ---
+// --- STEP 1: EXTRACT FILE A (MULTIPLE FILES) ---
 async function extractFileA() {
     const fileAInput = document.getElementById('fileA');
     const outputDiv = document.getElementById('output');
     const infoPanel = document.getElementById('infoPanel');
 
-    if (!fileAInput.files[0]) {
-        alert("Please upload File A.");
-        return;
+    if (!fileAInput.files || fileAInput.files.length === 0) {
+        alert("Please upload at least one File A.");
+        return false;
     }
 
     // Reset previous state
-    extractedA = null;
+    extractedA = { records: [], dates: new Set() }; // Reset
     outputDiv.innerHTML = '<div class="spinner"></div><p style="text-align:center">Reading File A...</p>';
-    
+
+    let errors = [];
+
     try {
-        const fileAData = await readFileA(fileAInput.files[0]);
-        extractedA = fileAData;
+        // Iterate over all selected files
+        for (let i = 0; i < fileAInput.files.length; i++) {
+            const file = fileAInput.files[i];
+            try {
+                const fileData = await readFileA(file);
+                // fileData = { dateStr: "DD-MM-YYYY", records: [...] }
+
+                extractedA.dates.add(fileData.dateStr);
+
+                // Add Date to each record and push to master list
+                fileData.records.forEach(rec => {
+                    extractedA.records.push({
+                        ...rec,
+                        date: fileData.dateStr
+                    });
+                });
+
+            } catch (err) {
+                console.error(`Error parsing ${file.name}:`, err);
+                errors.push(`${file.name}: ${err.message}`);
+            }
+        }
+
+        if (extractedA.records.length === 0) {
+            throw new Error("No valid records found in any of the uploaded files. " + errors.join(", "));
+        }
+
+        const dateList = Array.from(extractedA.dates).join(", ");
 
         infoPanel.innerHTML = `
             <strong>File A Ready:</strong><br>
-            Reference Date: ${fileAData.dateStr}<br>
-            Employees found: ${fileAData.records.length}
+            Dates Found: ${dateList}<br>
+            Total Records: ${extractedA.records.length}
         `;
+        if (errors.length > 0) {
+            infoPanel.innerHTML += `<br><span style="color:red; font-size:0.9em;">Errors: ${errors.join("; ")}</span>`;
+        }
+
         infoPanel.style.display = 'block';
-        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File A Uploded Successfully. Now Upload File B.</p>';
+        return true;
 
     } catch (err) {
         console.error(err);
         outputDiv.innerHTML = `<div style="text-align: center; color: red; padding: 20px;"><strong>Error File A:</strong> ${err.message}</div>`;
+        return false;
     }
 }
 
@@ -56,7 +98,7 @@ async function extractFileB() {
 
     if (!fileBInput.files[0]) {
         alert("Please upload File B.");
-        return;
+        return false;
     }
 
     // Reset previous B state
@@ -72,13 +114,40 @@ async function extractFileB() {
             <br><br><strong>File B Ready:</strong><br>
             Total Records Scanned: ${fileBData.length} (across all sheets)
         `;
-        
-        outputDiv.innerHTML = '<p style="text-align:center; color:green;">File B Uploaded Successfully. Click "Compare Files" to generate report.</p>';
+
+        return true;
 
     } catch (err) {
         console.error(err);
         outputDiv.innerHTML = `<div style="text-align: center; color: red; padding: 20px;"><strong>Error File B:</strong> ${err.message}</div>`;
+        return false;
     }
+}
+
+async function processAndCompare() {
+    // 1. Check if files are selected
+    const fileAInput = document.getElementById('fileA');
+    const fileBInput = document.getElementById('fileB');
+
+    if (!fileAInput.files || fileAInput.files.length === 0) {
+        alert("Please upload File A.");
+        return;
+    }
+    if (!fileBInput.files || fileBInput.files.length === 0) {
+        alert("Please upload File B.");
+        return;
+    }
+
+    // 2. Extract File A
+    const successA = await extractFileA();
+    if (!successA) return;
+
+    // 3. Extract File B
+    const successB = await extractFileB();
+    if (!successB) return;
+
+    // 4. Compare
+    compareFiles();
 }
 
 //NO FILTER
@@ -87,254 +156,247 @@ async function extractFileB() {
 // --- STEP 3: COMPARE AND DISPLAY ---
 function compareFiles() {
     const outputDiv = document.getElementById('output');
+    const controlsDiv = document.getElementById('controls');
 
-    if (!extractedA || !extractedB) {
-        alert("Please parse both files first.");
+    if (!extractedA || !extractedA.records || extractedA.records.length === 0) {
+        alert("Please parse File A first.");
+        return;
+    }
+    if (!extractedB) {
+        alert("Please parse File B first.");
         return;
     }
 
-    // 1. Normalize the Target Date from File A (e.g. "01-11-2025")
-    const targetDateNorm = normalizeDate(extractedA.dateStr); 
-    console.log("Target Date:", targetDateNorm);
+    // 1. Create Data Structure for File A (Key: ID + Date)
+    const mapA = {};
+    extractedA.records.forEach(rec => {
+        const key = `${rec.id}_${normalizeDate(rec.date)}`;
+        mapA[key] = rec;
+    });
 
-    // 2. Filter File B to only include records matching that date
+    console.log(`Map A created with ${Object.keys(mapA).length} unique entries.`);
+
+    // 2. Filter File B & Detect Duplicates
     const mapB = {};
-    let bRecordCount = 0;
 
     extractedB.forEach(rec => {
-        const recDateNorm = normalizeDate(rec.date);
-        if (recDateNorm === targetDateNorm) {
-            mapB[rec.id] = rec;
-            bRecordCount++;
+        const key = `${rec.id}_${normalizeDate(rec.date)}`;
+
+        if (mapA[key]) {
+            if (!mapB[key]) {
+                mapB[key] = {
+                    record: rec,
+                    history: [rec]
+                };
+            } else {
+                mapB[key].history.push(rec);
+            }
         }
     });
-    
-    console.log(`Matching records in File B for date ${targetDateNorm}: ${bRecordCount}`);
 
-    // 3. Build the Comparison Table based on File A records
-    let html = `
-    <div class="results-table-wrapper">
-        <h3 style="padding: 20px; color: white;">Comparison Report (Date: ${extractedA.dateStr})</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Safety Pass No</th>
-                    <th>Name</th>
-                    <th>File A Punch-In</th>
-                    <th>File B Punch-In</th>
-                    <th>File A Punch-Out</th>
-                    <th>File B Punch-Out</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    let matchCount = 0;
-    let mismatchCount = 0;
-    let missingCount = 0;
+    // 3. Build Comparison Results Array (Populate Global Variable)
+    comparisonResults = [];
 
     extractedA.records.forEach(rowA => {
-        const rowB = mapB[rowA.id];
-        
-        let bIn = "N/A";
-        let bOut = "N/A";
-        let status = "";
-        let colorClass = "";
+        const key = `${rowA.id}_${normalizeDate(rowA.date)}`;
+        const entryB = mapB[key];
 
-        if (rowB) {
-            bIn = rowB.in;
-            bOut = rowB.out;
+        let resultRow = {
+            //date: rowA.date.substring(0, 5),
+            date: rowA.date,
+            id: rowA.id,
+            name: rowA.name,
+            crane: "N/A",
+            inA: rowA.in,
+            inB: "N/A",
+            outA: rowA.out,
+            outB: "N/A",
+            status: "",
+            colorClass: ""
+        };
 
-            // --- TIME COMPARISON LOGIC ---
-            // Convert time strings to Minutes for numerical comparison
-            // This handles cases like "05:00 AM" vs "5:00 am"
-            const minA_In = getMinutesFromTime(rowA.in);
-            const minB_In = getMinutesFromTime(bIn);
-            const minA_Out = getMinutesFromTime(rowA.out);
-            const minB_Out = getMinutesFromTime(bOut);
+        if (entryB) {
+            // Check for Duplicates
+            if (entryB.history.length > 1) {
+                resultRow.status = "DUPLICATE";
+                resultRow.colorClass = "color: #FE91FF; font-weight:bold;";
+                const uniqueCranes = [...new Set(entryB.history.map(r => r.sheet))];
+                resultRow.crane = uniqueCranes.join(", ");
 
-            // Compare numerical values
-            // Note: If data is missing (-1), it won't match unless both are missing
-            const inMatch = (minA_In === minB_In);
-            const outMatch = (minA_Out === minB_Out);
+                const uniqueIn = [...new Set(entryB.history.map(r => r.in))];
+                resultRow.inB = uniqueIn.join(" / ");
 
-            if (inMatch && outMatch) {
-                status = "MATCH";
-                colorClass = "color: green; font-weight:bold;";
-                matchCount++;
+                const uniqueOut = [...new Set(entryB.history.map(r => r.out))];
+                resultRow.outB = uniqueOut.join(" / ");
+
             } else {
-                status = "MISMATCH";
-                colorClass = "color: orange; font-weight:bold;";
-                mismatchCount++;
+                // Single Match
+                const rowB = entryB.record;
+                resultRow.crane = rowB.sheet;
+                resultRow.inB = rowB.in;
+                resultRow.outB = rowB.out;
+
+                // Time Comparison
+                const minA_In = getMinutesFromTime(rowA.in);
+                const minB_In = getMinutesFromTime(resultRow.inB);
+                const minA_Out = getMinutesFromTime(rowA.out);
+                const minB_Out = getMinutesFromTime(resultRow.outB);
+
+                const inMatch = (minA_In === minB_In);
+                const outMatch = (minA_Out === minB_Out);
+
+                if (inMatch && outMatch) {
+                    resultRow.status = "MATCH";
+                    resultRow.colorClass = "color: #AFE1AF; font-weight:bold;";
+                } else {
+                    resultRow.status = "MISMATCH";
+                    resultRow.colorClass = "color: #FF7559; font-weight:bold;";
+                }
             }
-
-        } else {
-            status = "NOT FOUND IN B";
-            colorClass = "color: red; font-weight:bold;";
-            missingCount++;
-		//continue;
+            comparisonResults.push(resultRow);
         }
-
-        html += `
-            <tr>
-                <td>${rowA.id}</td>
-                <td>${rowA.name}</td>
-                <td>${rowA.in}</td>
-                <td>${bIn}</td>
-                <td>${rowA.out}</td>
-                <td>${bOut}</td>
-                <td style="${colorClass}">${status}</td>
-            </tr>
-        `;
     });
 
-    html += `</tbody></table>
-        <div style="padding:15px; background:#eee; margin-top:10px; border-radius:5px;">
-            <strong>Summary:</strong> &nbsp; 
-            <span style="color:green">Matches: ${matchCount}</span> &nbsp;|&nbsp; 
-            <span style="color:orange">Mismatches: ${mismatchCount}</span> &nbsp;|&nbsp; 
-            <span style="color:red">Missing in B: ${missingCount}</span>
-        </div>
-    </div>`;
+    // Show Controls
+    controlsDiv.style.display = "flex";
 
-    outputDiv.innerHTML = html;
+    // Initial Render
+    filterData();
 }
 
+// --- FILTER & RENDER LOGIC ---
 
-//FILTER ONLY GREEN
-/*
+function setFilter(filterType, btnElement) {
+    currentFilter = filterType;
 
-// --- STEP 3: COMPARE AND DISPLAY ---
-function compareFiles() {
+    // Update active button state
+    const btns = document.querySelectorAll('.btn-filter');
+    btns.forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    filterData();
+}
+
+function filterData() {
+    const searchInput = document.getElementById('searchInput');
+    searchTerm = searchInput.value.toLowerCase().trim();
+
+    const filtered = comparisonResults.filter(row => {
+        // 1. Status Filter
+        let statusMatch = true;
+        if (currentFilter !== 'all') {
+            statusMatch = (row.status === currentFilter);
+        }
+
+        // 2. Search Filter (Name or ID)
+        let searchMatch = true;
+        if (searchTerm) {
+            searchMatch = row.name.toLowerCase().includes(searchTerm) ||
+                row.id.toLowerCase().includes(searchTerm);
+        }
+
+        return statusMatch && searchMatch;
+    });
+
+    renderTable(filtered);
+}
+
+function renderTable(data) {
     const outputDiv = document.getElementById('output');
 
-    if (!extractedA || !extractedB) {
-        alert("Please parse both files first.");
-        return;
-    }
-
-    // Read filter from UI (default to 'match' if not present)
-    const filterEl = document.getElementById('filterType');
-    const filterType = filterEl ? filterEl.value : 'match'; // 'match' | 'mismatch'
-
-    // 1. Normalize the Target Date from File A (e.g. "01-11-2025")
-    const targetDateNorm = normalizeDate(extractedA.dateStr); 
-    console.log("Target Date:", targetDateNorm);
-
-    // 2. Filter File B to only include records matching that date
-    const mapB = {};
-    let bRecordCount = 0;
-
-    extractedB.forEach(rec => {
-        const recDateNorm = normalizeDate(rec.date);
-        if (recDateNorm === targetDateNorm) {
-            mapB[rec.id] = rec;
-            bRecordCount++;
-        }
+    // Calculate Summary Counts from ALL results (to show overall health)
+    let match = 0, mismatch = 0, duplicate = 0;
+    comparisonResults.forEach(r => {
+        if (r.status === "MATCH") match++;
+        else if (r.status === "MISMATCH") mismatch++;
+        else if (r.status === "DUPLICATE") duplicate++;
     });
-    
-    console.log(`Matching records in File B for date ${targetDateNorm}: ${bRecordCount}`);
 
-    // 3. Build the Comparison Table based on File A records
     let html = `
     <div class="results-table-wrapper">
-        <h3 style="padding: 20px; color: white;">Comparison Report (Date: ${extractedA.dateStr})</h3>
+        <h3 style="padding: 20px; color: white;">Comparison Report</h3>
+        <p style="padding-left: 20px; color: #ddd;">
+            Total Records: ${comparisonResults.length} &nbsp;|&nbsp; 
+            Showing: ${data.length}
+        </p>
         <table>
             <thead>
                 <tr>
-                    <th>Safety Pass No</th>
+                    <th>Date</th>
+                    <th>Safety Pass No &nbsp;</th>
                     <th>Name</th>
-                    <th>File A Punch-In</th>
-                    <th>File B Punch-In</th>
-                    <th>File A Punch-Out</th>
-                    <th>File B Punch-Out</th>
+                    <th>Crane Name &emsp; </th>
+                    <th>CLM P-In</th>
+                    <th>Vendor P-In</th>
+                    <th>CLM P-Out</th>
+                    <th>Vendor P-Out</th>
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
-    let matchCount = 0;
-    let mismatchCount = 0;
-    let missingCount = 0;
-
-    extractedA.records.forEach(rowA => {
-        const rowB = mapB[rowA.id];
-        
-        let bIn = "N/A";
-        let bOut = "N/A";
-        let status = "";
-        let colorStyle = "";
-
-        if (rowB) {
-            bIn = rowB.in;
-            bOut = rowB.out;
-
-            // --- TIME COMPARISON LOGIC ---
-            const minA_In = getMinutesFromTime(rowA.in);
-            const minB_In = getMinutesFromTime(bIn);
-            const minA_Out = getMinutesFromTime(rowA.out);
-            const minB_Out = getMinutesFromTime(bOut);
-
-            const inMatch = (minA_In === minB_In);
-            const outMatch = (minA_Out === minB_Out);
-
-            if (inMatch && outMatch) {
-                status = "MATCH";
-                colorStyle = "color: green; font-weight:bold;";
-                matchCount++;
-            } else {
-                status = "MISMATCH";
-                colorStyle = "color: orange; font-weight:bold;";
-                mismatchCount++;
-            }
-
-        } else {
-            // Do not display "NOT FOUND IN B" rows
-            status = "NOT FOUND IN B";
-            colorStyle = "color: red; font-weight:bold;";
-            missingCount++;
-            return; // Skip rendering this row altogether
-        }
-
-        // Apply filter: only render rows that match the selected filterType
-        const isMatchRow = status === "MATCH";
-        const shouldRender =
-            (filterType === 'match' && isMatchRow) ||
-            (filterType === 'mismatch' && !isMatchRow);
-
-        if (!shouldRender) {
-            return; // Skip rows outside the filter
-        }
-
-        html += `
-            <tr>
-                <td>${rowA.id}</td>
-                <td>${rowA.name}</td>
-                <td>${rowA.in}</td>
-                <td>${bIn}</td>
-                <td>${rowA.out}</td>
-                <td>${bOut}</td>
-                <td style="${colorStyle}">${status}</td>
-            </tr>
-        `;
-    });
+    if (data.length === 0) {
+        html += `<tr><td colspan="9" style="text-align:center; padding: 20px;">No records match your filters.</td></tr>`;
+    } else {
+        data.forEach(row => {
+            html += `
+                <tr>
+                    <td>${row.date}</td>
+                    <td>${row.id}</td>
+                    <td>${row.name}</td>
+                    <td>${row.crane}</td>
+                    <td>${row.inA}</td>
+                    <td>${row.inB}</td>
+                    <td>${row.outA}</td>
+                    <td>${row.outB}</td>
+                    <td style="${row.colorClass}">${row.status}</td>
+                </tr>
+            `;
+        });
+    }
 
     html += `</tbody></table>
-        <div style="padding:15px; background:#eee; margin-top:10px; border-radius:5px;">
-            <strong>Summary:</strong>&nbsp; 
-            <span style="color:green">Matches: ${matchCount}</span>&nbsp;|&nbsp; 
-            <span style="color:orange">Mismatches: ${mismatchCount}</span>
-            <!-- Missing in B counted but not displayed as rows; uncomment if you want to show the count:
-            &nbsp;|&nbsp;<span style="color:red">Missing in B: ${missingCount}</span>
-            -->
+        <div style="padding:15px; background:#eee; margin-top:10px; border-radius:5px; color: #333;">
+            <strong>Overall Summary:</strong> &nbsp; 
+            <span style="color:green">Matches: ${match}</span> &nbsp;|&nbsp; 
+            <span style="color:orange">Mismatches: ${mismatch}</span> &nbsp;|&nbsp; 
+            <span style="color:purple">Duplicates in B: ${duplicate}</span>
         </div>
     </div>`;
 
     outputDiv.innerHTML = html;
 }
-*/
+
+// --- DOWNLOAD FUNCTION ---
+function downloadReport() {
+    if (!comparisonResults || comparisonResults.length === 0) {
+        alert("No data to download.");
+        return;
+    }
+
+    // Map to simple object structure for SheetJS
+    const exportData = comparisonResults.map(row => ({
+        "Date": row.date,
+        "Safety Pass No": row.id,
+        "Name": row.name,
+        "Crane Name": row.crane,
+        "File A In": row.inA,
+        "File B In": row.inB,
+        "File A Out": row.outA,
+        "File B Out": row.outB,
+        "Status": row.status
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Comparison Report");
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `Attendance_Report_${dateStr}.xlsx`);
+}
+
+
 
 // --- PARSER: FILE A ---
 function readFileA(file) {
@@ -350,7 +412,7 @@ function readFileA(file) {
                 // 1. Extract Date from Header (Rows 1-20)
                 let extractedDate = null;
                 const dateRegex = /Date\s*[:\.-]?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i;
-                
+
                 for (let i = 0; i < 20 && i < aoa.length; i++) {
                     const rowStr = aoa[i].join(" ");
                     const match = rowStr.match(dateRegex);
@@ -374,7 +436,7 @@ function readFileA(file) {
 
                 // 3. Map Columns
                 const rawRecords = XLSX.utils.sheet_to_json(sheet, { range: headerRowIndex, raw: false });
-                if(rawRecords.length === 0) return reject(new Error("Table found but empty."));
+                if (rawRecords.length === 0) return reject(new Error("Table found but empty."));
 
                 const keys = Object.keys(rawRecords[0]);
                 const idKey = keys.find(k => k.toLowerCase().includes("safety pass no"));
@@ -409,7 +471,7 @@ function readFileBAsList(file) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                
+
                 const allRecords = [];
 
                 // LOOP THROUGH ALL SHEETS
@@ -434,7 +496,7 @@ function readFileBAsList(file) {
                             const m = String(rawDate.getMonth() + 1).padStart(2, '0');
                             const d = String(rawDate.getDate()).padStart(2, '0');
                             const y = rawDate.getFullYear();
-                            dateStr = `${d}-${m}-${y}`; 
+                            dateStr = `${d}-${m}-${y}`;
                         } else if (rawDate) {
                             dateStr = rawDate.toString().trim();
                         }
@@ -453,7 +515,7 @@ function readFileBAsList(file) {
 
                         // --- 2. FLAGMAN CHECK (Col K: Safety Pass, L: In, M: Out) ---
                         // Looking for Flagman ID in column K (Index 10)
-                        const flID = (row[10] || '').toString().trim(); 
+                        const flID = (row[10] || '').toString().trim();
                         if (flID && flID.toLowerCase() !== "off") {
                             allRecords.push({
                                 sheet: sheetName,
@@ -509,21 +571,21 @@ function formatTime(val) {
 // Converts "01/11/2025" or "1-11-2025" to standard "DD-MM-YYYY" for key matching
 function normalizeDate(dateStr) {
     if (!dateStr) return "";
-    
+
     // Replace slashes with dashes
     let s = dateStr.replace(/\//g, '-');
-    
+
     // Split to check format
-    const parts = s.split('-'); 
-    
+    const parts = s.split('-');
+
     if (parts.length === 3) {
         let d = parts[0].padStart(2, '0');
         let m = parts[1].padStart(2, '0');
         let y = parts[2];
-        
+
         // Handle 2-digit year
         if (y.length === 2) y = "20" + y;
-        
+
         return `${d}-${m}-${y}`;
     }
     return s;
@@ -533,14 +595,14 @@ function normalizeDate(dateStr) {
 // Used only for the final comparison logic
 function getMinutesFromTime(timeStr) {
     if (!timeStr || timeStr === "N/A" || timeStr.trim() === "") return -1;
-    
+
     // Normalize: remove spaces, lowercase
     const s = timeStr.toString().toLowerCase().replace(/\s/g, '');
-    
+
     // Regex to find HH:MM and optional am/pm
     const match = s.match(/^(\d{1,2}):(\d{2})([ap]m)?$/);
-    
-    if (!match) return -999; 
+
+    if (!match) return -999;
 
     let hour = parseInt(match[1], 10);
     const min = parseInt(match[2], 10);
