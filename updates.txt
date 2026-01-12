@@ -1,4 +1,4 @@
 check for record duplication (on the same date)
 add crane names
 mention the crane name, color the cell, cell header names
-
+Add search option
