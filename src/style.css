@@ -72,8 +72,8 @@ h4 {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(5, 5, 5, 0.8);
-    backdrop-filter: blur(12px);
+    background: rgba(5, 5, 5, 0.3);
+    backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -94,7 +94,7 @@ h4 {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    transition: all 0.4s ease;
+    transition: all 1s ease;
 }
 
 .logo:hover {
@@ -107,18 +107,19 @@ h4 {
     color: var(--text-secondary);
     font-size: 0.9rem;
     font-weight: 400;
-    transition: color 0.2s;
-}
-
-.nav-links div:hover {
-    color: var(--text-primary);
 }
 
 /* Tool Container */
 .tool-container {
-    max-width: 1100px;
+    max-width: 70%;
     margin: 0 auto 100px;
-    padding: 0 20px;
+    padding: 20px 0px;
+}
+
+.results-container {
+    max-width: 95%;
+    margin: 0 auto 100px;
+    padding: 20px 0px;
 }
 
 /* Upload Grid */
@@ -141,14 +142,20 @@ h4 {
 
 .glass-card:hover {
     border-color: var(--border-focus);
-    transform: translateY(-2px);
 }
 
 .card-header {
     display: flex;
     align-items: center;
+    word-spacing: 0.25em;
     gap: 16px;
     margin-bottom: 16px;
+}
+
+.card-info {
+    margin-left: auto;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
 .icon-box {
@@ -345,8 +352,10 @@ h4 {
 
 table {
     width: 100%;
+    min-width: 1000px;
     border-collapse: collapse;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 thead {

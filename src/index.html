@@ -41,9 +41,12 @@
                                 <polyline points="14 2 14 8 20 8" />
                             </svg>
                         </div>
-                        <h3>CLM Daily Report</h3>
+                        <h3>[FILE A] : CLM Daily Report</h3>
+                        <div class="card-info">
+                            <h4>CLM</h4>
+                        </div>
                     </div>
-                    <p>Upload your daily .xls files here.</p>
+                    <p>Upload your .xls files downloaded from CLM here.</p>
 
                     <label for="fileA" class="custom-file-upload">
                         <span>Select Files</span>
@@ -64,9 +67,12 @@
                                 <path d="M22 12A10 10 0 0 0 12 2v10z" />
                             </svg>
                         </div>
-                        <h3>Vendor Monthly Report</h3>
+                        <h3>[FILE B] : Vendor Monthly Report</h3>
+                        <div class="card-info">
+                            <h4>Vendor</h4>
+                        </div>
                     </div>
-                    <p>Upload the monthly .xlsx workbook.</p>
+                    <p>Upload the vendor's .xlsx workbook.</p>
 
                     <label for="fileB" class="custom-file-upload">
                         <span>Select File</span>
@@ -82,6 +88,8 @@
                     Run Comparison
                 </button>
             </div>
+        </div>
+        <div class="results-container">
 
             <!-- Info Panel -->
             <div id="infoPanel" class="info-panel" style="display:none;"></div>
@@ -90,9 +98,6 @@
             <div id="controls" class="controls-section" style="display:none;">
                 <div class="controls-header">
                     <h3>Results</h3>
-                    <div class="control-actions">
-                        <button class="btn-ghost" onclick="downloadReport()">Download Excel</button>
-                    </div>
                 </div>
 
                 <div class="filters-bar">
@@ -106,6 +111,7 @@
                         <button class="pill" onclick="setFilter('MISMATCH', this)">Mismatch</button>
                         <button class="pill" onclick="setFilter('DUPLICATE', this)">Duplicate</button>
                     </div>
+                    <button class="btn-ghost" onclick="downloadReport()">Download Excel</button>
                 </div>
             </div>
 
