@@ -37,7 +37,7 @@ async function extractFileA() {
 
     // Reset previous state
     extractedA = { records: [], dates: new Set() }; // Reset
-    outputDiv.innerHTML = '<div class="spinner"></div><p style="text-align:center">Reading File A...</p>';
+    outputDiv.innerHTML = '<div class="spinner"></div><p class="text-center">Reading File A...</p>';
 
     let errors = [];
 
@@ -77,7 +77,7 @@ async function extractFileA() {
             Total Records: ${extractedA.records.length}
         `;
         if (errors.length > 0) {
-            infoPanel.innerHTML += `<br><span style="color:red; font-size:0.9em;">Errors: ${errors.join("; ")}</span>`;
+            infoPanel.innerHTML += `<br><span style="color:var(--error); font-size:0.9em;">Errors: ${errors.join("; ")}</span>`;
         }
 
         infoPanel.style.display = 'block';
@@ -85,7 +85,7 @@ async function extractFileA() {
 
     } catch (err) {
         console.error(err);
-        outputDiv.innerHTML = `<div style="text-align: center; color: red; padding: 20px;"><strong>Error File A:</strong> ${err.message}</div>`;
+        outputDiv.innerHTML = `<div class="text-center status-error" style="padding: 20px;"><strong>Error File A:</strong> ${err.message}</div>`;
         return false;
     }
 }
@@ -103,7 +103,7 @@ async function extractFileB() {
 
     // Reset previous B state
     extractedB = null;
-    outputDiv.innerHTML = '<div class="spinner"></div><p style="text-align:center">Reading ALL sheets in File B...</p>';
+    outputDiv.innerHTML = '<div class="spinner"></div><p class="text-center">Reading ALL sheets in File B...</p>';
 
     try {
         const fileBData = await readFileBAsList(fileBInput.files[0]);
@@ -119,7 +119,7 @@ async function extractFileB() {
 
     } catch (err) {
         console.error(err);
-        outputDiv.innerHTML = `<div style="text-align: center; color: red; padding: 20px;"><strong>Error File B:</strong> ${err.message}</div>`;
+        outputDiv.innerHTML = `<div class="text-center status-error" style="padding: 20px;"><strong>Error File B:</strong> ${err.message}</div>`;
         return false;
     }
 }
@@ -219,7 +219,7 @@ function compareFiles() {
             // Check for Duplicates
             if (entryB.history.length > 1) {
                 resultRow.status = "DUPLICATE";
-                resultRow.colorClass = "color: #FE91FF; font-weight:bold;";
+                resultRow.colorClass = "status-warning";
                 const uniqueCranes = [...new Set(entryB.history.map(r => r.sheet))];
                 resultRow.crane = uniqueCranes.join(", ");
 
@@ -247,10 +247,10 @@ function compareFiles() {
 
                 if (inMatch && outMatch) {
                     resultRow.status = "MATCH";
-                    resultRow.colorClass = "color: #AFE1AF; font-weight:bold;";
+                    resultRow.colorClass = "status-success";
                 } else {
                     resultRow.status = "MISMATCH";
-                    resultRow.colorClass = "color: #FF7559; font-weight:bold;";
+                    resultRow.colorClass = "status-error";
                 }
             }
             comparisonResults.push(resultRow);
@@ -270,7 +270,7 @@ function setFilter(filterType, btnElement) {
     currentFilter = filterType;
 
     // Update active button state
-    const btns = document.querySelectorAll('.btn-filter');
+    const btns = document.querySelectorAll('.pill');
     btns.forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
 
@@ -314,8 +314,8 @@ function renderTable(data) {
 
     let html = `
     <div class="results-table-wrapper">
-        <h3 style="padding: 20px; color: white;">Comparison Report</h3>
-        <p style="padding-left: 20px; color: #ddd;">
+        <h3 style="padding: 20px; color: var(--text-primary);">Comparison Report</h3>
+        <p style="padding-left: 20px; color: var(--text-secondary);">
             Total Records: ${comparisonResults.length} &nbsp;|&nbsp; 
             Showing: ${data.length}
         </p>
@@ -337,7 +337,7 @@ function renderTable(data) {
     `;
 
     if (data.length === 0) {
-        html += `<tr><td colspan="9" style="text-align:center; padding: 20px;">No records match your filters.</td></tr>`;
+        html += `<tr><td colspan="9" class="text-center" style="padding: 20px;">No records match your filters.</td></tr>`;
     } else {
         data.forEach(row => {
             html += `
@@ -350,18 +350,18 @@ function renderTable(data) {
                     <td>${row.inB}</td>
                     <td>${row.outA}</td>
                     <td>${row.outB}</td>
-                    <td style="${row.colorClass}">${row.status}</td>
+                    <td class="${row.colorClass}">${row.status}</td>
                 </tr>
             `;
         });
     }
 
     html += `</tbody></table>
-        <div style="padding:15px; background:#eee; margin-top:10px; border-radius:5px; color: #333;">
-            <strong style="color:#36454F">Overall Summary:</strong> &nbsp; 
-            <span style="color:#4F7942">Matches: ${match}</span> &nbsp;|&nbsp; 
-            <span style="color:#C04000">Mismatches: ${mismatch}</span> &nbsp;|&nbsp; 
-            <span style="color:#5D3FD3">Duplicates in B: ${duplicate}</span>
+        <div style="padding:20px; background:var(--bg-card); margin-top:1px; border-top:1px solid var(--border-subtle); color: var(--text-secondary);">
+            <strong style="color:var(--text-primary)">Overall Summary:</strong> &nbsp; 
+            <span style="color:var(--success)">Matches: ${match}</span> &nbsp;|&nbsp; 
+            <span style="color:var(--error)">Mismatches: ${mismatch}</span> &nbsp;|&nbsp; 
+            <span style="color:var(--warning)">Duplicates in B: ${duplicate}</span>
         </div>
     </div>`;
 

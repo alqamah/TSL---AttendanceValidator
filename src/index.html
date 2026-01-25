@@ -7,71 +7,116 @@
     <title>Attendance Reconciliation Tool</title>
     <!-- SheetJS Library -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Cutive+Mono&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="glass-container">
-        <header>
-            <h2>Attendance Reconciliation Tool</h2>
-        </header>
+    <div class="app-wrapper">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="logo">ATTENDANCE RECONCILIATION TOOL</div>
+            <div class="nav-links">
+                <div class="nav-item">FMM-INFRA, TATA STEEL LTD</div>
+            </div>
+        </nav>
 
-        <div class="upload-section">
-            <label class="upload-card" for="fileA">
-                <h3>CLM Daily Report (File A)</h3>
-                <p>Upload the .xls file containing daily report data from CLM.</p>
-                <div class="file-input-wrapper">
-                    <span class="btn-upload">Choose File</span>
-                    <input type="file" id="fileA" accept=".xls,.xlsx" multiple
-                        onchange="updateFileName('fileA', 'statusA')">
+        <!-- Tool Section -->
+        <div id="tool" class="tool-container">
+
+            <div class="upload-grid">
+                <!-- File A -->
+                <div class="glass-card upload-card">
+                    <div class="card-header">
+                        <div class="icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                        </div>
+                        <h3>CLM Daily Report</h3>
+                    </div>
+                    <p>Upload your daily .xls files here.</p>
+
+                    <label for="fileA" class="custom-file-upload">
+                        <span>Select Files</span>
+                        <input type="file" id="fileA" accept=".xls,.xlsx" multiple
+                            onchange="updateFileName('fileA', 'statusA')">
+                    </label>
+                    <div id="statusA" class="status-text"></div>
                 </div>
-                <div id="statusA" class="file-status"></div>
-            </label>
 
-            <label class="upload-card" for="fileB">
-                <h3>Vendor Monthly Report (File B)</h3>
-                <p>Upload the .xlsx file containing monthly data from Vendor.</p>
-                <div class="file-input-wrapper">
-                    <span class="btn-upload">Choose File</span>
-                    <input type="file" id="fileB" accept=".xlsx,.xls" onchange="updateFileName('fileB', 'statusB')">
+                <!-- File B -->
+                <div class="glass-card upload-card">
+                    <div class="card-header">
+                        <div class="icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                                <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                            </svg>
+                        </div>
+                        <h3>Vendor Monthly Report</h3>
+                    </div>
+                    <p>Upload the monthly .xlsx workbook.</p>
+
+                    <label for="fileB" class="custom-file-upload">
+                        <span>Select File</span>
+                        <input type="file" id="fileB" accept=".xlsx,.xls" onchange="updateFileName('fileB', 'statusB')">
+                    </label>
+                    <div id="statusB" class="status-text"></div>
                 </div>
-                <div id="statusB" class="file-status"></div>
-            </label>
-        </div>
-
-        <div class="action-area">
-            <button class="btn-primary" onclick="processAndCompare()">Process & Compare</button>
-        </div>
-
-        <div id="infoPanel" class="info-panel"></div>
-
-        <!-- Controls Section (Hidden by default, shown after comparison) -->
-        <div id="controls" class="controls-section" style="display:none;">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search Name or Safety Pass No..."
-                    onkeyup="filterData()">
             </div>
 
-            <div class="filter-group">
-                <button class="btn-filter active" onclick="setFilter('all', this)">All</button>
-                <button class="btn-filter" onclick="setFilter('MATCH', this)">Match</button>
-                <button class="btn-filter" onclick="setFilter('MISMATCH', this)">Mismatch</button>
-                <button class="btn-filter" onclick="setFilter('DUPLICATE', this)">Duplicate</button>
+            <!-- Action Area -->
+            <div class="action-area">
+                <button class="btn-primary btn-large" onclick="processAndCompare()">
+                    Run Comparison
+                </button>
             </div>
 
-            <button class="btn-download" onclick="downloadReport()">
-                Download Excel
-            </button>
+            <!-- Info Panel -->
+            <div id="infoPanel" class="info-panel" style="display:none;"></div>
+
+            <!-- Controls (Hidden until processed) -->
+            <div id="controls" class="controls-section" style="display:none;">
+                <div class="controls-header">
+                    <h3>Results</h3>
+                    <div class="control-actions">
+                        <button class="btn-ghost" onclick="downloadReport()">Download Excel</button>
+                    </div>
+                </div>
+
+                <div class="filters-bar">
+                    <div class="search-wrapper">
+                        <input type="text" id="searchInput" placeholder="Search by Name or Safety Pass..."
+                            onkeyup="filterData()">
+                    </div>
+                    <div class="filter-pills">
+                        <button class="pill active" onclick="setFilter('all', this)">All</button>
+                        <button class="pill" onclick="setFilter('MATCH', this)">Match</button>
+                        <button class="pill" onclick="setFilter('MISMATCH', this)">Mismatch</button>
+                        <button class="pill" onclick="setFilter('DUPLICATE', this)">Duplicate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Table -->
+            <div id="output"></div>
         </div>
 
-        <div id="output"></div>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 AttendanceCheck. Internal Tool.</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>

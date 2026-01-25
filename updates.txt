@@ -1,9 +1,0 @@
-check for record duplication (on the same date)
-add crane names
-mention the crane name, color the cell, cell header names
-Add search option
-
-
-04-12-2025	RW0625569824	SANJAY KUMAR SHARMA	01:54 PM	8:22 AM	10:04 PM	5:31 PM	MISMATCH
-03-12-2025	RW0625569824	SANJAY KUMAR SHARMA	01:54 PM	8:07 AM	10:06 PM	5:31 PM	MISMATCH
-Incorrect data read from File B. File and FileB data are matching
