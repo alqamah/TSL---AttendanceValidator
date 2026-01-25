@@ -96,3 +96,7 @@ After processing, a report table will appear. You can search, filter, and export
 - **"Date not found in File A header"**: Ensure the text "Date :" followed by the date (DD-MM-YYYY) exists in the top 20 rows of your CLM report.
 - **"Column 'Safety Pass No' not found"**: Check that your CLM report headers are on a single row and spelling matches exactly.
 - **No records showing**: Ensure the dates in File A match the dates present in File B. Records are only compared if the Date matches.
+
+
+### PRESENTATION
+- ** https://docs.google.com/presentation/d/e/2PACX-1vS9TdTQEWcKIQNW1180kjNAOeN70KSglJItdfmrBt6zn4pOTT8ywl1Grb2u0LbRFczHwc76LxkqAvzZ/pub?start=false&loop=false&delayms=60000&slide=id.g3bbce37d7f5_4_4290
