@@ -112,14 +112,14 @@ h4 {
 /* Tool Container */
 .tool-container {
     max-width: 70%;
+    height: fit-content;
     margin: 0 auto 100px;
-    padding: 20px 0px;
+    padding-top: 30px;
 }
 
 .results-container {
     max-width: 95%;
     margin: 0 auto 100px;
-    padding: 20px 0px;
 }
 
 /* Upload Grid */
@@ -235,7 +235,7 @@ h4 {
 
 .btn-ghost {
     background: transparent;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid var(--border-focus);
     color: var(--text-secondary);
     padding: 8px 16px;
     border-radius: 50px;
@@ -406,11 +406,24 @@ tr:hover td {
 
 .footer {
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
     padding: 40px;
     color: var(--text-secondary);
     font-size: 0.85rem;
     border-top: 1px solid var(--border-subtle);
     margin-top: 80px;
+}
+
+.footer p {
+    color: var(--text-secondary);
+    word-spacing: 1rem;
+}
+
+.footer p:nth-child(3) {
+    font-weight: 900;
 }
 
 @keyframes fadeIn {
