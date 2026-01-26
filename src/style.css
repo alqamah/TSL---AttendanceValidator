@@ -349,6 +349,7 @@ h4 {
     border-radius: var(--radius-md);
     overflow-x: auto;
     white-space: nowrap;
+    scrollbar-width: none;
 }
 
 table {
