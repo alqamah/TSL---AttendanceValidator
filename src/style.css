@@ -347,7 +347,8 @@ h4 {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    overflow-x: scroll;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 table {
