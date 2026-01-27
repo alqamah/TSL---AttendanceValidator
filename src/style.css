@@ -16,9 +16,9 @@
     --text-muted: #52525b;
 
     /* Accents - Minimal Elegant (Indigo/Sky) */
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --primary-glow: rgba(59, 130, 246, 0.5);
+    --primary: #b1b1b1;
+    --primary-hover: #e0e0e0;
+    --primary-glow: rgba(255, 255, 255, 0.531);
 
     /* Status Colors */
     --success: #10b981;
@@ -225,12 +225,12 @@ h4 {
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    opacity: 0.75;
 }
 
 .btn-primary:hover {
-    background: #fff;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    transform: scale(1.02);
+    opacity: 1;
+
 }
 
 .btn-ghost {
