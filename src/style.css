@@ -269,7 +269,7 @@ h4 {
     color: #93c5fd;
     margin-bottom: 40px;
     font-size: 0.95rem;
-z-index:10;
+    z-index: 10;
 }
 
 /* Controls */
@@ -346,11 +346,11 @@ z-index:10;
 
 /* Table */
 .results-table-wrapper {
-padding: 10px;
+    padding: 10px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);  
-    overflow : auto;
+    border-radius: var(--radius-md);
+    overflow: auto;
 }
 
 table {
@@ -358,7 +358,7 @@ table {
     min-width: 1000px;
     border-collapse: collapse;
     font-size: 0.9rem;
-  
+
 }
 
 thead {
@@ -408,7 +408,7 @@ tr:hover td {
 }
 
 .footer {
-margin-top: 200px;
+    margin-top: 100px;
     border-top: 1px solid var(--border-subtle);
     text-align: center;
     display: flex;
