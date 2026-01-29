@@ -112,7 +112,7 @@ h4 {
 
 /* Tool Container */
 .tool-container {
-    max-width: 90%;
+    max-width: 70%;
     height: fit-content;
     margin: 0 auto 100px;
     padding-top: 30px;
@@ -262,11 +262,11 @@ h4 {
 
 /* Info Panel */
 .info-panel {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(203, 203, 203, 0.1);
     border-left: 3px solid var(--primary);
     padding: 20px;
     border-radius: var(--radius-sm);
-    color: #93c5fd;
+    color: #b5b5b5;
     margin-bottom: 40px;
     font-size: 0.95rem;
     z-index: 10;
@@ -346,7 +346,7 @@ h4 {
 
 /* Table */
 .results-table-wrapper {
-    padding: 10px;
+    padding: 2px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
